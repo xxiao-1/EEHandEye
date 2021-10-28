@@ -1,9 +1,9 @@
 # Expect time stamped transformations
 # Output aligned and resampled poses
 
-from hand_eye_calibration.quaternion import (angular_velocity_between_quaternions,
+from hand_eye_calibration.quaternion import (angular_velocity_between_quaternions,angular_velocity_interpolate,
                         quaternions_interpolate, Quaternion)
-from hand_eye_calibration.time_alignment_plotting_tools import (plot_results, plot_input_data,
+from hand_eye_calibration.time_alignment_plotting_tools import (plot_input_data_angV, plot_results, plot_input_data,
                                            plot_time_stamped_poses,
                                            plot_angular_velocities)
 from scipy import signal
@@ -99,6 +99,50 @@ def resample_quaternions(times, quaternions, dt):
   return (resample_quaternions_from_samples(times, quaternions, samples),
           samples)
 
+def resample_compute_angular_velocity(times,angV_B, dt_A, smoothing_kernel_size, clipping_percentile, plot=False):
+  """
+  Resample the angular velocity based on the new interval dt_A within the interval
+  spanned by the first and last time stamp in 'times'.
+  Uses what for angular velocity interpolation.
+  """
+  # resample
+  interval = times[-1] - times[0]
+  samples = np.linspace(times[0], times[-1], interval / dt_A +1)
+
+  # interp angular velocity 
+  interp_angV = []
+  for sample in samples:
+    assert sample <= times[-1], (sample, times)
+    assert sample >= times[0], (sample, times[0])
+
+    right_idx = bisect.bisect_left(times, sample)
+    if (np.isclose(sample, times[right_idx], atol=1e-16)):
+      interp_angV.append(angV_B[right_idx])
+    else:
+      left_idx = right_idx - 1
+      assert right_idx < times.shape[0], end_idx
+      assert left_idx >= 0, left_idx
+      sample_times = []
+      sample_times.append(sample)
+      angV_interp = angular_velocity_interpolate(
+          angV_B[left_idx], times[left_idx], angV_B[right_idx],
+          times[right_idx], sample_times)
+      interp_angV.append( angV_interp)
+    assert len(interp_angV) == samples.shape[0], str(
+      len(interp_angV)) + " vs " + str(samples.shape[0])
+
+  # calculate velocity norms
+  angular_velocity_norms = []
+  angular_velocity_filtered = filter_and_smooth_angular_velocity(
+      interp_angV, smoothing_kernel_size, clipping_percentile, plot)
+
+  for i in range(0, angular_velocity_size):
+    angular_velocity_norms.append(
+        np.linalg.norm(angular_velocity_filtered[i, :]))
+
+  assert len(angular_velocity_norms) == (len(interp_angV) - 0)
+  return (angular_velocity_norms,samples)
+
 
 def compute_angular_velocity_norms(quaternions, samples, smoothing_kernel_size, clipping_percentile, plot=False):
   angular_velocity_norms = []
@@ -179,6 +223,56 @@ def calculate_time_offset(times_A, quaternions_A, times_B, quaternions_B, filter
 
   return time_offset
 
+def calculate_time_offset_angV(times_A, quaternions_A, times_B, angV_B, filtering_config, plot=False):
+  """
+  Calculate the time offset between the stamped quaternions_A and quaternions_B.
+
+  We generate fake angular rotations by taking the derivatives of the
+  quaternions. From these derivatives we take the norm and then we apply a
+  convolution to compute the best time alignment for the two sets of poses.
+  Note that the accuracy of the time alignment is limited by the higher frequency
+  of the two signals, i.e. by the smallest time interval between two poses.
+  """
+  time_offset = 0.0
+
+  # Get the two mean time steps. Take the smaller one for the interpolation.
+  dt_A = np.mean(np.diff(times_A))
+  times_B[0] = times_B[0] + dt_A/2
+
+  # Using time step resample the poses inbetween measurements.
+  (quaternions_A_interp, samples_A) = resample_quaternions(times_A,
+                                                           quaternions_A, dt_A)
+
+  # Compute angular velocity norms for the resampled orientations.
+  angular_velocity_norms_A = compute_angular_velocity_norms(
+      quaternions_A_interp, samples_A,
+      filtering_config.smoothing_kernel_size_A,
+      filtering_config.clipping_percentile_A, plot)
+
+  (angular_velocity_norms_B,samples_B) = resample_compute_angular_velocity(times_B, angV_B, dt_A,
+                                                          filtering_config.smoothing_kernel_size_B,
+                                                          filtering_config.clipping_percentile_B, 
+                                                          plot)
+
+  # Adapt samples to filtered data.
+  samples_A = samples_A[:len(angular_velocity_norms_A)]
+  samples_B = samples_B[:len(angular_velocity_norms_B)]
+
+
+  # Plot the intput as it goes through the interpolation and filtering.
+  if plot:
+    plot_input_data_angV(quaternions_A, quaternions_A_interp,
+                    angular_velocity_norms_A,
+                    angular_velocity_norms_B,
+                    angular_velocity_norms_A,
+                    angular_velocity_norms_B, False)
+
+  # Comput time offset.
+  time_offset = calculate_time_offset_from_signals(
+      samples_A, angular_velocity_norms_A, samples_B,
+      angular_velocity_norms_B, plot, True)
+
+  return time_offset
 
 def interpolate_poses_from_samples(time_stamped_poses, samples):
   """

@@ -31,6 +31,22 @@ def read_time_stamped_poses_from_csv_file(csv_file, JPL_quaternion_format=False)
 
   return (time_stamped_poses.copy(), times, quaternions)
 
+def read_time_stamped_angular_velocity_from_csv_file(csv_file):
+  """
+  Reads time stamped poses from a CSV file.
+  Assumes the following line format:
+    timestamp [s], r, p, y
+  """
+  with open(csv_file, 'r') as csvfile:
+    csv_reader = csv.reader(csvfile, delimiter=',', quotechar='|')
+    time_stamped_poses = np.array(list(csv_reader))
+    time_stamped_poses = time_stamped_poses.astype(float)
+
+  # Extract the quaternions from the poses.
+  times = time_stamped_poses[:, 0].copy()
+  angV = time_stamped_poses[:, 1:].copy()
+
+  return (times, angV)
 
 def write_double_numpy_array_to_csv_file(array, csv_file):
   np.savetxt(csv_file, array, delimiter=", ", fmt="%.18f")

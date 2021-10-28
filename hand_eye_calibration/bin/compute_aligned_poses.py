@@ -52,6 +52,9 @@ if __name__ == '__main__':
   parser.add_argument('--visualize', type=bool, default=False,
                       help='Visualize the poses.')
 
+  parser.add_argument('--imu', type=bool, default=False,
+                      help='use imu angular velocity.')
+
   args = parser.parse_args()
 
   use_JPL_quaternion = False
@@ -72,11 +75,18 @@ if __name__ == '__main__':
   print("Found ", time_stamped_poses_B_H.shape[
       0], " poses in file: ", args.poses_B_H_csv_file)
 
-  (time_stamped_poses_W_E, times_W_E,
-   quaternions_W_E) = read_time_stamped_poses_from_csv_file(
-       args.poses_W_E_csv_file, use_JPL_quaternion)
-  print("Found ", time_stamped_poses_W_E.shape[
-      0], " poses in file: ", args.poses_W_E_csv_file)
+  if args.imu:
+    (time_stamped_poses_W_E, times_W_E,
+    quaternions_W_E) = read_time_stamped_poses_from_csv_file(
+        args.poses_W_E_csv_file, use_JPL_quaternion)
+    print("Found ", time_stamped_poses_W_E.shape[
+        0], " poses in file: ", args.poses_W_E_csv_file)
+  else:
+    (times_W_E,
+    angV_W_E) = read_time_stamped_angular_velocity_from_csv_file(
+        args.poses_W_E_csv_file)
+    print("Found ", time_stamped_poses_W_E.shape[
+        0], " poses in file: ", args.poses_W_E_csv_file)
 
   print("Computing time offset...")
   filtering_config = FilteringConfig()
@@ -95,12 +105,12 @@ if __name__ == '__main__':
 
   print("Writing aligned poses to CSV files...")
   write_time_stamped_poses_to_csv_file(aligned_poses_B_H,
-                                       args.aligned_poses_B_H_csv_file)
+                                      args.aligned_poses_B_H_csv_file)
   write_time_stamped_poses_to_csv_file(aligned_poses_W_E,
-                                       args.aligned_poses_W_E_csv_file)
+                                      args.aligned_poses_W_E_csv_file)
 
   if args.time_offset_output_csv_file is not None:
-    print("Writing time_offset to %s." % args.time_offset_output_csv_file)
-    from hand_eye_calibration.csv_io import write_double_numpy_array_to_csv_file
-    write_double_numpy_array_to_csv_file(np.array((time_offset, )),
-                                         args.time_offset_output_csv_file)
+      print("Writing time_offset to %s." % args.time_offset_output_csv_file)
+      from hand_eye_calibration.csv_io import write_double_numpy_array_to_csv_file
+      write_double_numpy_array_to_csv_file(np.array((time_offset, )),
+                                          args.time_offset_output_csv_file)

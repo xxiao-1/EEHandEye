@@ -14,7 +14,8 @@ import numpy.testing as npt
 import math
 import matplotlib.pyplot as plt
 import copy
-
+import warnings
+warnings.filterwarnings('ignore')
 
 def plot_alignment(data_no_drops, data_with_drops, blocking=False):
   plt.subplot(2, 1, 1)
@@ -22,6 +23,7 @@ def plot_alignment(data_no_drops, data_with_drops, blocking=False):
   plt.subplot(2, 1, 2)
   plt.plot(data_with_drops)
   plt.show(block=blocking)
+  input()
   plt.close()
 
 

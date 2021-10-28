@@ -222,3 +222,56 @@ def plot_input_data(quaternions_A,
     max_size = (max_size[0], max_size[1] * 0.45)
     mng.resize(*max_size)
   plt.show(block=block)
+
+def plot_input_data_angV(quaternions_A,
+                    quaternions_A_interp,
+                    angular_velocity_norms_A,
+                    angular_velocity_norms_B,
+                    angular_velocity_norms_A_filtered,
+                    angular_velocity_norms_B_filtered,
+                    block=True):
+  quat_A = np.array([quat.q for quat in quaternions_A])
+  quat_A_interp = np.array([quat.q for quat in quaternions_A_interp])
+
+  fig = plt.figure()
+
+  title_position = 1.05
+
+  fig.suptitle("Input Data [A = top, B = bottom]", fontsize='24')
+  a1 = plt.subplot(2, 4, 1)
+  a1.set_title(
+      "Input quaternions \nx [red], y [green], z [blue], w [cyan]",
+      y=title_position)
+  plt.plot(quat_A[:, 0], c='r')
+  plt.plot(quat_A[:, 1], c='g')
+  plt.plot(quat_A[:, 2], c='b')
+  plt.plot(quat_A[:, 3], c='c')
+  a2 = plt.subplot(2, 4, 2)
+  a2.set_title(
+      "Interpolated quaternions \nx [red], y [green], z [blue], w [cyan]",
+      y=title_position)
+  plt.plot(quat_A_interp[:, 0], c='r')
+  plt.plot(quat_A_interp[:, 1], c='g')
+  plt.plot(quat_A_interp[:, 2], c='b')
+  plt.plot(quat_A_interp[:, 3], c='c')
+  a3 = plt.subplot(2, 4, 3)
+  a3.set_title("Norm of angular velocity", y=title_position)
+  plt.plot(angular_velocity_norms_A, c='r')
+  a4 = plt.subplot(2, 4, 4)
+  a4.set_title(
+      "Norm of angular velocity \n[median filter]", y=title_position)
+  plt.plot(angular_velocity_norms_A_filtered, c='r')
+
+  plt.subplot(2, 4, 7)
+  plt.plot(angular_velocity_norms_B, c='b')
+  plt.subplot(2, 4, 8)
+  plt.plot(angular_velocity_norms_B_filtered, c='b')
+
+  plt.subplots_adjust(left=0.025, right=0.975, top=0.8, bottom=0.05)
+
+  if plt.get_backend() == 'TkAgg':
+    mng = plt.get_current_fig_manager()
+    max_size = mng.window.maxsize()
+    max_size = (max_size[0], max_size[1] * 0.45)
+    mng.resize(*max_size)
+  plt.show(block=block)
