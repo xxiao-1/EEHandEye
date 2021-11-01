@@ -60,7 +60,7 @@ class HandEyeConfig:
     self.enable_exhaustive_search = False
 
     # Select distinctive poses based on skrew axis
-    self.prefilter_poses_enabled = True
+    self.prefilter_poses_enabled = False  # xxiao close
     self.prefilter_dot_product_threshold = 0.975
 
     # RANSAC
@@ -654,7 +654,8 @@ def compute_hand_eye_calibration_RANSAC(dq_B_H_vec, dq_W_E_vec, config):
 
   # Reject pairs whose motion is not informative,
   # i.e. their screw axis dot product is large
-  if config.prefilter_poses_enabled:
+  # if config.prefilter_poses_enabled:
+  if False:
     dq_B_H_vec_filtered, dq_W_E_vec_filtered = prefilter_using_screw_axis(
         dq_B_H_vec, dq_W_E_vec, config.prefilter_dot_product_threshold)
     assert len(dq_W_E_vec_filtered) == len(dq_B_H_vec_filtered)

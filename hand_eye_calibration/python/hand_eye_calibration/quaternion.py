@@ -322,7 +322,14 @@ def angular_velocity_between_quaternions(q1, q2, t):
   if q1_q2_inv.w < 0.:
     q1_q2_inv = -q1_q2_inv
   angle_axis = q1_q2_inv.angle_axis()
-  return 0.5 / t * angle_axis[3] * angle_axis[0:3]
+  angV=0.5 / t * angle_axis[3] * angle_axis[0:3]
+  print('------------------------')
+  print(q1.angle_axis())
+  print(q2.angle_axis())
+  print(angle_axis)
+  print(angV)
+  print(t)
+  return angV
 
 def angular_velocity_interpolate(angV_left, t_left,  angV_right, t_right, times):
   """ Returns an array of the interpolated quaternions between q_left/t_left and

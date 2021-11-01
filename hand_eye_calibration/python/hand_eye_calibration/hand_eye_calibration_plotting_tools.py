@@ -73,7 +73,8 @@ def plot_poses(poses_list, plot_arrows=True, title="", blocking=True):
               markersize=5, color=colors[i], alpha=0.5)
       if not plot_arrows:
         continue
-
+      if True:
+        continue
       rotation_quaternion = Quaternion(q=pose[3:7])
 
       x_rotated = rotation_quaternion.rotate_vector([1, 0, 0, 0])
@@ -115,6 +116,7 @@ def plot_poses(poses_list, plot_arrows=True, title="", blocking=True):
   ax.auto_scale_xyz([axis_min, axis_max], [
       axis_min, axis_max], [axis_min, axis_max])
   plt.show(block=blocking)
+  input()
 
 
 def plot_alignment_errors(errors_position, rmse_pose, errors_orientation,

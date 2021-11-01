@@ -55,6 +55,7 @@ if __name__ == "__main__":
                       default=False, help='Visualize the poses.')
   parser.add_argument('--plot_every_nth_pose', type=int,
                       help='Plot only every n-th pose.', default=10)
+
   args = parser.parse_args()
 
   use_poses_B_H = (args.aligned_poses_B_H_csv_file is not None)
