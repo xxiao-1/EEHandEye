@@ -1,5 +1,6 @@
 import tf
 import numpy as np
+import math
 
 from hand_eye_calibration.dual_quaternion_hand_eye_calibration import (
     compute_hand_eye_calibration, align_paths_at_index,
@@ -7,7 +8,7 @@ from hand_eye_calibration.dual_quaternion_hand_eye_calibration import (
 from hand_eye_calibration.hand_eye_calibration_plotting_tools import (
     plot_alignment_errors, plot_poses)
 from hand_eye_calibration.dual_quaternion import DualQuaternion
-from hand_eye_calibration.quaternion import Quaternion
+from hand_eye_calibration.quaternion import (Quaternion,angle_between_quaternions)
 
 
 def random_quaternion():
@@ -86,6 +87,8 @@ def generate_test_path(n_samples, include_outliers=False,
     z = 0.5 + t * 5
     theta = 4 * np.pi * t
     outliers = []
+    angRange=0
+    linearDistance=0
     for i in range(n_samples):
         q_tmp = tf.transformations.quaternion_from_euler(
             0., -theta[i] * 0.1, -theta[i], 'rxyz')
@@ -101,9 +104,13 @@ def generate_test_path(n_samples, include_outliers=False,
                     (-1 if np.random.rand() < 0.5 else 0)
         if include_noise:
             # Add zero mean gaussian noise with sigma noise_sigma.
-            x[i] += np.random.normal(0.0, noise_sigma_trans)
-            y[i] += np.random.normal(0.0, noise_sigma_trans)
-            z[i] += np.random.normal(0.0, noise_sigma_trans)
+            d_x=np.random.normal(0.0, noise_sigma_trans)
+            d_y=np.random.normal(0.0, noise_sigma_trans)
+            d_z=np.random.normal(0.0, noise_sigma_trans)
+            x[i] += d_x
+            y[i] += d_y
+            z[i] += d_z
+            distance= math.sqrt(d_x*d_x+d_y*d_y+d_z*d_z)
             # TODO(ff): Fix this, there should only be 3 random numbers drawn.
             axis_noise_x = np.random.normal(0.0, noise_sigma_rot)
             axis_noise_y = np.random.normal(0.0, noise_sigma_rot)
@@ -115,6 +122,12 @@ def generate_test_path(n_samples, include_outliers=False,
             q_noise.normalize()
             q_noise_free = Quaternion(q=q_tmp)
             q = q_noise * q_noise_free * q_noise.inverse()
+            
+            angularD=180/3.14*angle_between_quaternions(q,q_noise_free)
+            if angularD>angRange:
+              angRange=angularD
+            if distance>linearDistance:
+              linearDistance=distance
         else:
             q = Quaternion(q=q_tmp)
         q.normalize()
@@ -123,6 +136,9 @@ def generate_test_path(n_samples, include_outliers=False,
 
         dq = DualQuaternion.from_pose(x[i], y[i], z[i], q.x, q.y, q.z, q.w)
         dual_quaternions.append(dq)
+    print(angRange)
+    print(linearDistance)
+    print(linearDistance)
     if include_outliers:
         print("Included {} outliers at {} in the test data.".format(
             len(outliers), outliers))

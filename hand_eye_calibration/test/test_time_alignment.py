@@ -43,6 +43,7 @@ class TimeAlignment(unittest.TestCase):
   # between the different quaternions.
   quat_interpolate_times = np.random.rand(int(n_samples))
   quat_interpolate_times.sort()
+
   quat_interpolate_times2 = (
       quat_interpolate_times *
       (quat_interpolate_times[-1] - quat_interpolate_times[0]) + t2s[0])
@@ -80,52 +81,52 @@ class TimeAlignment(unittest.TestCase):
     # Then call calculate_time_offset.
     pass
 
-  def test_introduce_data_drops(self):
-    test_size = 1000
-    test = [math.sin(float(x)) for x in np.linspace(0, 2 * math.pi, test_size)]
+  # def test_introduce_data_drops(self):
+  #   test_size = 1000
+  #   test = [math.sin(float(x)) for x in np.linspace(0, 2 * math.pi, test_size)]
 
-    test_before = copy.deepcopy(test)
+  #   test_before = copy.deepcopy(test)
 
-    config = DataDropConfig()
-    config.max_percentage_for_single_drop = 5.0
-    config.overall_drop_percentage = 20.0
+  #   config = DataDropConfig()
+  #   config.max_percentage_for_single_drop = 5.0
+  #   config.overall_drop_percentage = 20.0
 
-    print("test size before dropping: {}".format(len(test)))
-    set_to_none = True
-    introduce_data_drops(test, config, set_to_none)
-    print("test size after dropping: {}".format(len(test)))
+  #   print("test size before dropping: {}".format(len(test)))
+  #   set_to_none = True
+  #   introduce_data_drops(test, config, set_to_none)
+  #   print("test size after dropping: {}".format(len(test)))
 
-    expected_test_size = float(test_size) - \
-        ((config.overall_drop_percentage / 100.0) * float(test_size))
+  #   expected_test_size = float(test_size) - \
+  #       ((config.overall_drop_percentage / 100.0) * float(test_size))
 
-    print("expected_test_size: {}".format(expected_test_size))
-    # assert abs(len(test) - expected_test_size) < 1e-8
-    plot_alignment(test_before, test, blocking=self.make_plots_blocking)
+  #   print("expected_test_size: {}".format(expected_test_size))
+  #   # assert abs(len(test) - expected_test_size) < 1e-8
+  #   plot_alignment(test_before, test, blocking=self.make_plots_blocking)
 
-    def test_introduce_data_drops_with_time_alignment(self):
+  #   def test_introduce_data_drops_with_time_alignment(self):
 
-      angular_velocity1_norms_before = copy.deepcopy(angular_velocity1_norms)
-      angular_velocity2_norms_before = copy.deepcopy(angular_velocity2_norms)
+  #     angular_velocity1_norms_before = copy.deepcopy(angular_velocity1_norms)
+  #     angular_velocity2_norms_before = copy.deepcopy(angular_velocity2_norms)
 
-      time_offset = calculate_time_offset_from_signals(
-          self.t1s[0:-1], self.angular_velocity1_norms, self.t2s[0:-1],
-          self.angular_velocity2_norms, plot=True, block=True)
-      print(time_offset)
+  #     time_offset = calculate_time_offset_from_signals(
+  #         self.t1s[0:-1], self.angular_velocity1_norms, self.t2s[0:-1],
+  #         self.angular_velocity2_norms, plot=True, block=True)
+  #     print(time_offset)
 
-      config = DataDropConfig()
-      config.max_percentage_for_single_drop = 5.0
-      config.overall_drop_percentage = 20.0
+  #     config = DataDropConfig()
+  #     config.max_percentage_for_single_drop = 5.0
+  #     config.overall_drop_percentage = 20.0
 
-      set_to_none = False
-      introduce_data_drops(test, config, set_to_none)
+  #     set_to_none = False
+  #     introduce_data_drops(test, config, set_to_none)
 
-      expected_test_size = float(test_size) - \
-          ((config.overall_drop_percentage / 100.0) * float(test_size))
+  #     expected_test_size = float(test_size) - \
+  #         ((config.overall_drop_percentage / 100.0) * float(test_size))
 
-      print("expected_test_size: {}".format(expected_test_size))
+  #     print("expected_test_size: {}".format(expected_test_size))
 
-      # assert abs(len(test) - expected_test_size) < 1e-8
-      plot_alignment(test_before, test, blocking=self.make_plots_blocking)
+  #     # assert abs(len(test) - expected_test_size) < 1e-8
+  #     plot_alignment(test_before, test, blocking=self.make_plots_blocking)
 
 
 if __name__ == '__main__':

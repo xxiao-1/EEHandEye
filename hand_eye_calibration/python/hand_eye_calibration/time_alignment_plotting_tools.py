@@ -19,10 +19,10 @@ def plot_results(times_A, times_B, signal_A, signal_B,
 
   title_position = 1.05
 
-  matplotlib.rcParams.update({'font.size': 20})
+  matplotlib.rcParams.update({'font.size': 16})
 
   # fig.suptitle("Time Alignment", fontsize='24')
-  a1 = plt.subplot(1, 3, 1)
+  a1 = plt.subplot(1, 2, 1)
 
   a1.get_xaxis().get_major_formatter().set_useOffset(False)
 
@@ -35,23 +35,26 @@ def plot_results(times_A, times_B, signal_A, signal_B,
   min_time = min(np.amin(times_A), np.amin(times_B))
   times_A_zeroed = times_A - min_time
   times_B_zeroed = times_B - min_time
-
-  plt.plot(times_A_zeroed, signal_A, c='r')
-  plt.plot(times_B_zeroed, signal_B, c='b')
-
+  # signal_C=signal_A.copy()
+  #1 #3682be
+  #2 '#f05326'
+  #3 #2E8B57
+  plt.plot(times_A_zeroed, signal_A, c='#3682be',label='trajectory 1')
+  plt.plot(times_B_zeroed, signal_B, '-.',c='#f05326',label='trajectory 2')
+  plt.legend(loc='lower left')
   times_A_shifted = times_A + time_offset
 
-  a3 = plt.subplot(1, 3, 2)
-  a3.get_xaxis().get_major_formatter().set_useOffset(False)
-  plt.ylabel('correlation')
-  plt.xlabel('sample idx offset')
-  a3.set_title(
-      "Correlation Result \n[Ideally has a single dominant peak.]",
-      y=title_position)
-  plt.hold("on")
-  plt.plot(np.arange(-len(signal_A) + 1, len(signal_B)), convoluted_signals)
+  # a3 = plt.subplot(1, 3, 2)
+  # a3.get_xaxis().get_major_formatter().set_useOffset(False)
+  # plt.ylabel('correlation')
+  # plt.xlabel('sample idx offset')
+  # a3.set_title(
+  #     "Correlation Result \n[Ideally has a single dominant peak.]",
+  #     y=title_position)
+  # plt.hold("on")
+  # plt.plot(np.arange(-len(signal_A) + 1, len(signal_B)), convoluted_signals)
 
-  a2 = plt.subplot(1, 3, 3)
+  a2 = plt.subplot(1, 2, 2)
   a2.get_xaxis().get_major_formatter().set_useOffset(False)
   plt.ylabel('angular velocity norm [rad]')
   plt.xlabel('time [s]')
@@ -61,18 +64,20 @@ def plot_results(times_A, times_B, signal_A, signal_B,
   min_time = min(np.amin(times_A_shifted), np.amin(times_B))
   times_A_shifted_zeroed = times_A_shifted - min_time
   times_B_zeroed = times_B - min_time
-  plt.plot(times_A_shifted_zeroed, signal_A, c='r')
-  plt.plot(times_B_zeroed, signal_B, c='b')
+  plt.plot(times_A_shifted_zeroed, signal_A, c='#3682be',label='trajectory 1')
+  plt.plot(times_B_zeroed, signal_B,c='#f05326',label='aligned trajectory 2')
+  plt.legend(loc='lower left')
 
-  plt.subplots_adjust(left=0.04, right=0.99, top=0.8, bottom=0.15)
+  plt.subplots_adjust(left=0.08, right=0.99, top=0.8, bottom=0.15)
 
   if plt.get_backend() == 'TkAgg':
     mng = plt.get_current_fig_manager()
     max_size = mng.window.maxsize()
-    max_size = (max_size[0], max_size[1] * 0.45)
+    max_size = (max_size[0]*0.9, max_size[1] * 0.46)
     mng.resize(*max_size)
   plt.show(block=block)
-
+  plt.savefig('/home/xxiao/1.png')
+  input()
 
 def plot_time_stamped_poses(title,
                             time_stamped_poses_A,
